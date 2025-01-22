@@ -1,0 +1,46 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+
+# Load the dataset
+url = 'https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv'
+data = pd.read_csv(url)
+
+# Data Preprocessing
+# Handle missing values
+imputer = SimpleImputer(strategy='most_frequent')
+data['Age'] = imputer.fit_transform(data[['Age']])
+data['Embarked'] = imputer.fit_transform(data[['Embarked']])
+
+# Drop columns that won't be used
+data.drop(['Cabin', 'Ticket', 'Name', 'PassengerId'], axis=1, inplace=True)
+
+# Encode categorical variables
+label_enc = LabelEncoder()
+data['Sex'] = label_enc.fit_transform(data['Sex'])
+data['Embarked'] = label_enc.fit_transform(data['Embarked'])
+
+# Feature and target selection
+X = data.drop('Survived', axis=1)
+y = data['Survived']
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Model training
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Predictions
+y_pred = model.predict(X_test)
+
+# Evaluation
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("Classification Report:\n", classification_report(y_test, y_pred))
